@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <ctime>
+#include <list>
 // #include <>
 using namespace std;
 
@@ -19,20 +20,16 @@ template <	typename K,
 		 >
 class HashMap
 {
-class Map
+class Pair
 {
 private:
 	K _key;
 	V _value;
 public:
-	Map(K k, V v): _key(k), _value(v){}
-	~Map()
+	Pair(K k, V v): _key(k), _value(v){}
+	~Pair()
 	{
-		delete this;
-	}
-	void print() const
-	{
-		cout << _key << _value << endl;
+		// delete this;
 	}
 	K& getKey()
 	{
@@ -50,7 +47,7 @@ private:
 	uint32_t _amount = 0;
 	
 	Hash hashFunc;
-	vector<vector<Map*>> _chainList;
+	vector<list<Pair>> _chainList;
 	void resizeHashMap(uint32_t new_size)
 	{
 		// resizeCounter++;
@@ -59,16 +56,21 @@ private:
 		_chainList.resize(_len);
 		for(int i = 0; i < _chainList.size(); ++i)
 		{
-			for (int j = 0; j < _chainList[i].size(); ++j)
+			int j = 0;
+			for (auto iter = _chainList[i].begin(); iter != _chainList[i].end(); ++iter)
 			{
-				if (j != hashFunc(_chainList[i][j]->getKey()))
+
+				if (j++ != hashFunc(iter->getKey()))
 				{
 					// хэш элемента не совпадает с нужным индексом цепочки
-					auto temp = _chainList[i][j];
-					_chainList[i].erase(_chainList[i].begin()+j);
+					auto temp = iter;;
+					cout << "Destructor here: " << endl;
+					_chainList[i].erase(iter);
+					delete &(*iter);
 					this->append(temp->getKey(), temp->getValue());
 					_amount--;
 				}
+
 			}
 		}
 	}
@@ -95,15 +97,14 @@ public:
 	{
 		auto hash = hashFunc(key);
 		++_amount;
-		float curLF = (float)(_amount/_len);
-		if (_loadFactor < float(curLF))
+		if (_loadFactor < getCurLF())
 		{
 			resizeHashMap(2*_len + 1);
 		}
 		auto idx = hash & (_len - 1);
 		if (_len > 0)
 		{
-			_chainList[idx].push_back(new Map(key, value));
+			_chainList[idx].push_back(*(new Pair(key, value)));
 		}
 	}
 
@@ -137,14 +138,11 @@ public:
 	void remove(K key)
 	{
 		auto idx = hashFunc(key) & (_len-1);
-		Map* temp = 0;
 		bool del_flag = 0;
-		for (int i = 0; i <_chainList[idx].size(); ++i){
-			if (_chainList[idx][i]->getKey() == key)
+		for (auto iter = _chainList[idx].begin(); iter != _chainList[idx].end(); ++iter){
+			if (iter->getKey() == key)
 			{
-				cout << _chainList[idx][i]->getValue() << endl;
-				temp = _chainList[idx][i];
-				_chainList[idx].erase(_chainList[idx].begin()+i);
+				_chainList[idx].erase(iter);
 				del_flag = true;
 				break;
 			}
@@ -167,10 +165,12 @@ public:
 	{
 		auto idx = hashFunc(key) & (_len-1);
 		for (auto element: _chainList[idx])
-			if (element->getKey() == key)
+		{
+			if (element.getKey() == key)
 			{
-				return element->getValue();
+				return element.getValue();
 			}
+		}
 		throw NoSuchKeyException();
 	}
 
@@ -187,9 +187,9 @@ template <	typename K,
 		auto _chainList = obj.getChainList();
 		for (int i = 0; i < _chainList.size(); ++i)
 		{
-			for (int j = 0; j < _chainList[i].size(); ++j)
+			for (auto iter = _chainList[i].begin(); iter != _chainList[i].end(); ++iter)
 			{
-				out << _chainList[i][j]->getKey() << ": " << _chainList[i][j]->getValue() << endl;
+				out << iter->getKey() << ": " << iter->getValue() << endl;
 			}
 		}
 		return out;
