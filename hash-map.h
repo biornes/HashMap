@@ -12,6 +12,12 @@ struct NoSuchKeyException : public exception {
    }
 };
 
+struct KeyExistsYet : public exception {
+   const char * what () const throw () {
+      return "KeyExistsYet";
+   }
+};
+
 
 
 template <	typename K,
@@ -104,6 +110,15 @@ public:
 		auto idx = hash & (_len - 1);
 		if (_len > 0)
 		{
+			for (auto iter = _chainList[idx].begin(); iter != _chainList[idx].end(); ++iter)
+			{
+				if (key == iter->getKey())
+				{
+					throw KeyExistsYet();
+					// Какой-нибудь из двух вариантов
+					return;
+				}
+			}
 			_chainList[idx].push_back(*(new Pair(key, value)));
 		}
 	}

@@ -11,6 +11,7 @@ int main()
 	}
 
 	obj.append(13, 15);
+	// obj.append(13, 15);
 	
 	cout << obj;
 	cout << "TEST FIND-METHOD (search by key = 13): \n";
