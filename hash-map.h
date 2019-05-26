@@ -33,10 +33,6 @@ private:
 	V _value;
 public:
 	Pair(K k, V v): _key(k), _value(v){}
-	~Pair()
-	{
-		// delete this;
-	}
 	K& getKey()
 	{
 		return _key;
@@ -70,9 +66,7 @@ private:
 				{
 					// хэш элемента не совпадает с нужным индексом цепочки
 					auto temp = iter;;
-					cout << "Destructor here: " << endl;
 					_chainList[i].erase(iter);
-					delete &(*iter);
 					this->append(temp->getKey(), temp->getValue());
 					_amount--;
 				}
@@ -119,7 +113,7 @@ public:
 					return;
 				}
 			}
-			_chainList[idx].push_back(*(new Pair(key, value)));
+			_chainList[idx].push_back(Pair(key, value));
 		}
 	}
 
